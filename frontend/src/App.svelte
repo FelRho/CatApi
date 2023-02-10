@@ -1,10 +1,13 @@
 <script>
   import { onMount } from "svelte";
-  import MainComponent from "./lib/MainComponent.svelte";
+  import ChangeVersion from "./lib/ChangeVersionComponent.svelte";
+  import CrashComponent from "./lib/CrashComponent.svelte";
   import app from "./main";
 
   const StyleStorage = "IsXpStyle";
   let styleXp = true;
+  let updateVisible = false;
+  let crash = false;
 
   let component;
   let styles = {
@@ -13,6 +16,10 @@
   };
 
   onMount(() => {
+    readAndApplyStyle();
+  });
+
+  function readAndApplyStyle() {
     styleXp = localStorage.getItem(StyleStorage) === "true";
 
     if (styleXp) {
@@ -24,7 +31,7 @@
     }
 
     component.apply();
-  });
+  }
 
   function changeStyle() {
     styleXp = !styleXp;
@@ -33,38 +40,64 @@
 
     location.reload();
   }
+
+  function crashApp() {
+    crash = true;
+
+    document.body.classList.remove("xp-bg");
+    document.body.classList.remove("windows-bg");
+
+    document.body.classList.add("crash-bg");
+  }
+
+  $: if (crash) {
+    document.body.classList.remove("xp-bg");
+    document.body.classList.remove("windows-bg");
+
+    document.body.classList.add("crash-bg");
+  } else {
+    readAndApplyStyle();
+  }
 </script>
 
 <main>
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col">
-        <button on:click={changeStyle}>Downgrade</button>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <div class="window window-size">
-          <div class="title-bar">
-            <div class="title-bar-text">My First Program</div>
-            <div class="title-bar-controls">
-              <button aria-label="Minimize" />
-              <button aria-label="Maximize" />
-              <button aria-label="Close" />
+  {#if crash}
+    <CrashComponent bind:chrashed={crash} />
+  {:else}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col">
+          <div class="window window-size">
+            <div class="title-bar">
+              <div class="title-bar-text">Cat API</div>
+              <div class="title-bar-controls">
+                <button
+                  aria-label="Help"
+                  on:click={() => {
+                    updateVisible = true;
+                  }}
+                />
+                <button aria-label="Close" on:click={crashApp} />
+              </div>
             </div>
-          </div>
-          <div class="window-body">
-            <p>Hello, world!</p>
+            <div class="window-body">
+              <p>Hello, world!</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  {/if}
 </main>
 
+<ChangeVersion
+  IsXpStyle={styleXp}
+  on:click={changeStyle}
+  bind:IsVisisble={updateVisible}
+/>
+
 <style>
-  .window-size
-  {
+  .window-size {
     height: 70vh;
     width: 70vw;
   }
