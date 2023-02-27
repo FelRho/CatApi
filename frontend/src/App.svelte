@@ -4,12 +4,16 @@
   import CrashComponent from "./lib/CrashComponent.svelte";
   import { tweened } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
+  import { Request } from "./scripts/Request";
 
   const StyleStorage = "IsXpStyle";
   let styleXp = true;
   let updateVisible = false;
   let crash = false;
   let imageLoaded = false;
+
+  let image;
+  let imageDescription = "";
 
   let component;
   let styles = {
@@ -74,6 +78,22 @@
   function loaded() {
     imageLoaded = true;
   }
+
+  function sendImage()
+  {
+    let data =  {
+      "img" : image,
+      "description" : imageDescription
+    }
+
+    Request("http://127.0.0.1:8000/create", data,).then((response) => 
+    {
+      console.log(response);
+    }).catch((error) => 
+    {
+      console.log(error);
+    });
+  }
 </script>
 
 <main>
@@ -135,6 +155,18 @@
                 </article>
                 <article role="tabpanel" hidden id="up-tab">
                   <h3>More...</h3>
+                  <div class="row mb-3">
+                    <div class="field-row">
+                      <label for="destext">Description</label>
+                      <input id="destext" type="text" bind:value={imageDescription}/>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <input type="file" bind:value={image}/>
+                  </div>
+                  <div class="row">
+                    <button type="button" on:click={sendImage}>Save</button>
+                  </div>
                 </article>
               </section>
             </div>
