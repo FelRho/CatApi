@@ -2,12 +2,14 @@
   import { onMount } from "svelte";
   import ChangeVersion from "./lib/ChangeVersionComponent.svelte";
   import CrashComponent from "./lib/CrashComponent.svelte";
-  import app from "./main";
+  import { tweened } from "svelte/motion";
+  import { cubicOut } from "svelte/easing";
 
   const StyleStorage = "IsXpStyle";
   let styleXp = true;
   let updateVisible = false;
   let crash = false;
+  let imageLoaded = false;
 
   let component;
   let styles = {
@@ -17,6 +19,15 @@
 
   onMount(() => {
     readAndApplyStyle();
+  });
+
+  const progress = tweened(0, {
+    duration: 2000,
+    easing: cubicOut,
+  });
+
+  onMount(() => {
+    progress.set(1);
   });
 
   function readAndApplyStyle() {
@@ -57,6 +68,11 @@
     document.body.classList.add("crash-bg");
   } else {
     readAndApplyStyle();
+    console.log("Aaaa");
+  }
+
+  function loaded() {
+    imageLoaded = true;
   }
 </script>
 
@@ -71,6 +87,7 @@
             <div class="title-bar">
               <div class="title-bar-text">Cat API</div>
               <div class="title-bar-controls">
+                <button aria-label="Minimize" />
                 <button
                   aria-label="Help"
                   on:click={() => {
@@ -81,7 +98,50 @@
               </div>
             </div>
             <div class="window-body">
-              <p>Hello, world!</p>
+              <section class="tabs">
+                <menu role="tablist" aria-label="Sample Tabs">
+                  <button
+                    role="tab"
+                    aria-controls="img-tab"
+                    aria-selected="true"
+                    >Tab A</button
+                  >
+                  <button
+                    role="tab"
+                    aria-controls="up-tab"
+                    aria-selected="false"
+                    >Tab B</button
+                  >
+                </menu>
+                <!-- the tab content -->
+                <article role="tabpanel" id="img-tab">
+                  <div class="mb-2 mt-2">
+                    <img
+                      src="https://thecatapi.com/api/images/get?format=src"
+                      alt="cat pic"
+                      on:load={loaded}
+                    />
+                    {#if !imageLoaded}
+                      <progress value={$progress} />
+                    {/if}
+                  </div>
+                  <section class="field-row" style="justify-content: flex-end">
+                    <button
+                      on:click={() => {
+                        location.reload();
+                      }}>Random</button
+                    >
+                  </section>
+                </article>
+                <article role="tabpanel" hidden id="up-tab">
+                  <h3>More...</h3>
+                </article>
+              </section>
+            </div>
+            <div class="status-bar">
+              <p class="status-bar-field">—ฅ/ᐠ. ̫ .ᐟ\ฅ —</p>
+              <p class="status-bar-field">Much Wow</p>
+              <p class="status-bar-field">ก₍⸍⸌̣ʷ̣̫⸍̣⸌₎ค</p>
             </div>
           </div>
         </div>
@@ -97,8 +157,12 @@
 />
 
 <style>
+  img {
+    max-width: 100%;
+    min-width: 80%;
+  }
+
   .window-size {
-    height: 70vh;
-    width: 70vw;
+    min-width: 20vw;
   }
 </style>
